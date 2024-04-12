@@ -17,6 +17,7 @@ export default function Home() {
         </header>
       </div>
 
+
       <EventTable />
 
 
