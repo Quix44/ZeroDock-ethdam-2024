@@ -14,10 +14,11 @@ export default function Home() {
             alt="zerodock logo"
           />
         </header>
-
       </div>
-
-
+      <div className="grid grid-cols-12 gap-4">
+        <div></div>  
+        <div></div>
+      </div>
     </main>
   );
 }
