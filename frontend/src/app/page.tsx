@@ -18,9 +18,14 @@ export default function Home() {
       </div>
 
 
+
+
+
+      <div className="grid grid-cols-12 gap-4">
+        <div></div>
+        <div></div>
+      </div>
       <EventTable />
-
-
     </main>
   );
 }
