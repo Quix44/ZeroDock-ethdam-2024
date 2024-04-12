@@ -1,9 +1,10 @@
 
+import EventTable from '@/components/EventTable';
 import Image from 'next/image';
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between ">
+    <main className="flex min-h-screen flex-col items-center ">
       <div className="relative w-full overflow-hidden mb-4">
         <div className="absolute z-0 h-full inset-0 m-auto bg-gradient-to-b border-b border-background pointer-events-none from-[#550097] to-transparent"></div>
         <header className="p-24 relative z-20 py-8 container flex flex-col gap-8 lg:gap-2">
@@ -14,8 +15,9 @@ export default function Home() {
             alt="zerodock logo"
           />
         </header>
-
       </div>
+
+      <EventTable />
 
 
     </main>

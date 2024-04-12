@@ -33,6 +33,7 @@
   --destructive-foreground: 274 8.9% 98.3%;
 
   --ring: 274 89% 66%;
+  --radius: 0.5rem;
 }
 
 @media (prefers-color-scheme: dark) {
