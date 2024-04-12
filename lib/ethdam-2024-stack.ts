@@ -1,16 +1,15 @@
 import * as cdk from 'aws-cdk-lib';
+import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class Ethdam2024Stack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    const listenerQueue = new sqs.Queue(this, 'ListenerQueue', {
+      visibilityTimeout: cdk.Duration.seconds(300)
+    });
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'Ethdam2024Queue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+
   }
 }
