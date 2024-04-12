@@ -6,3 +6,14 @@ node_modules
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+
+volume
+.env
+dist
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+cache
+artifacts
+cache
+typechain-types
