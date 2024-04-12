@@ -395,23 +395,10 @@ img, video {
   background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
 }
 
-.from-\[\#4776E6\] {
-  --tw-gradient-from: #4776e6 var(--tw-gradient-from-position);
-  --tw-gradient-to: #4776e600 var(--tw-gradient-to-position);
+.from-\[\#550097\] {
+  --tw-gradient-from: #550097 var(--tw-gradient-from-position);
+  --tw-gradient-to: #55009700 var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-
-.from-10\% {
-  --tw-gradient-from-position: 10%;
-}
-
-.from-50\% {
-  --tw-gradient-from-position: 50%;
-}
-
-.via-\[\#8E54E9\] {
-  --tw-gradient-to: #8e54e900 var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), #8e54e9 var(--tw-gradient-via-position), var(--tw-gradient-to);
 }
 
 .to-transparent {
