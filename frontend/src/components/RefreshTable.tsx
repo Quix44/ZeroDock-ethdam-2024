@@ -8,7 +8,7 @@ function RefreshTable() {
     return (
         <form action={getData}>
             <Button variant="outline" size="icon">
-                <ReloadIcon className="h-6 w-6" />
+                <ReloadIcon className="h-4 w-4" />
             </Button>
         </form>
     )
