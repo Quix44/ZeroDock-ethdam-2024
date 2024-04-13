@@ -1,5 +1,6 @@
 
 import EventRow from "./EventRow"
+import RefreshTable from "./RefreshTable"
 
 const json = [{
     "contractAddress": "0x5c8...b3F3",
@@ -42,8 +43,14 @@ async function EventTable() {
 
     return (
         <section className="grid container rounded-lg border bg-card text-card-foreground shadow-sm grid-cols-12 p-8">
-            <div className="col-span-3 space-y-1.5 p-6"><h3 className="text-2xl font-semibold leading-none tracking-tight">Events Table</h3><p className="text-sm text-muted-foreground">View events fired here.</p></div>
-            {json.map((data) => <EventRow data={data} />)
+            <div className="col-span-3 space-y-1.5 p-6">
+                <h3 className="text-2xl font-semibold leading-none tracking-tight">Events Table</h3><p className="text-sm text-muted-foreground">View events fired here.</p>
+
+            </div>
+            <div className="col-span-1 col-start-12 justify-self-end  space-y-1.5 p-6">
+                <RefreshTable />
+            </div>
+            {json.map((data) => <EventRow data={data} key={data.contractAddress} />)
             }
 
         </section>
