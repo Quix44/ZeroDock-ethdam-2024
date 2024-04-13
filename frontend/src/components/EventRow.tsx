@@ -41,7 +41,7 @@ function EventRow({ data }: any) {
             <div className="col-span-1 self-start justify-self-center">
                 <Button variant="outline" className="border-yellow-500 hover:bg-yellow-500">
 
-                    <LightningBoltIcon className="h-4 w-4 " /> Validate
+                    <LightningBoltIcon className="h-4 w-4 " /> Verify
                 </Button>
             </div>
         </article>
