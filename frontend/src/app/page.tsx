@@ -62,9 +62,7 @@ export default function Home() {
         </div>
       </div>
       <EventTable />
-      <div className="relative w-full overflow-hidden mb-4">
-        <div className="absolute z-0 h-full inset-0 m-auto bg-gradient-to-b border-b border-background pointer-events-none from-[#550097] to-transparent"></div>
-      </div>
+
     </main>
   );
 }

@@ -24,7 +24,7 @@ function ClipboardCopy({ copyData }: any) {
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                        <p>{copyData.toolTipText}</p>
+                        <p className="truncate ...">{copyData.toolTipText}</p>
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>
