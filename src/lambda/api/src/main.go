@@ -15,6 +15,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	l "github.com/aws/aws-sdk-go-v2/service/lambda"
+	lt "github.com/aws/aws-sdk-go-v2/service/lambda/types"
 )
 
 type Event struct {
@@ -81,6 +83,8 @@ func HandleRequest(ctx context.Context, request events.APIGatewayV2HTTPRequest) 
 	switch request.RequestContext.HTTP.Method {
 	case "GET":
 		return handleGetRequest(request)
+	case "POST":
+		return handlePostRequest(request)
 	default:
 		return CreateAPIGatewayProxyResponse(405, "Method Not Allowed", nil)
 	}
@@ -91,6 +95,18 @@ func handleGetRequest(request events.APIGatewayV2HTTPRequest) (events.APIGateway
 	switch request.RequestContext.HTTP.Path {
 	case "/v1/events":
 		return handleListEvents(request)
+	default:
+		return CreateAPIGatewayProxyResponse(404, "Not Found", map[string]string{
+			"Content-Type": "application/json",
+		})
+	}
+}
+
+func handlePostRequest(request events.APIGatewayV2HTTPRequest) (events.APIGatewayProxyResponse, error) {
+	fmt.Println((request.RequestContext.HTTP.Path))
+	switch request.RequestContext.HTTP.Path {
+	case "/v1/events":
+		return handleValidateProof(request)
 	default:
 		return CreateAPIGatewayProxyResponse(404, "Not Found", map[string]string{
 			"Content-Type": "application/json",
@@ -153,6 +169,29 @@ func Query[T any](connParams DynamoConnectionParams, indexName *string, keyCondi
 	return items, nil
 }
 
+func handleValidateProof(request events.APIGatewayV2HTTPRequest) (events.APIGatewayProxyResponse, error) {
+	var proverBody ProverEvent
+	fmt.Println(request.Body)
+	err := json.Unmarshal([]byte(request.Body), &proverBody)
+	if err != nil {
+		fmt.Printf("Error unmarshalling request body: %v\n", err)
+		return CreateAPIGatewayProxyResponse(400, "Bad Request", nil)
+	}
+
+	if proverBody.Event.Proof == "" || proverBody.Event.PublicData == "" || proverBody.Event.VK == "" {
+		fmt.Printf("Missing required fields in request body\n")
+		return CreateAPIGatewayProxyResponse(400, "Bad Request", nil)
+	}
+
+	output, err := invokeVerifierLambdaFunction("Ethdam2024Stack-handleVerifierFunctionD32ABCBE-Kw6mf3INs1PG", proverBody)
+	if err != nil {
+		fmt.Printf("Error invoking verifier lambda function: %v\n", err)
+		return CreateAPIGatewayProxyResponse(500, "Internal Server Error", nil)
+	}
+
+	return CreateAPIGatewayProxyResponse(200, string(output), nil)
+}
+
 func handleListEvents(request events.APIGatewayV2HTTPRequest) (events.APIGatewayProxyResponse, error) {
 	var handlePagination = false
 
@@ -180,6 +219,46 @@ func handleListEvents(request events.APIGatewayV2HTTPRequest) (events.APIGateway
 	}
 
 	return CreateAPIGatewayProxyResponse(200, string(responseBody), nil)
+}
+
+type ProverEvent struct {
+	Event ProverPayload `json:"event"`
+}
+
+type ProverPayload struct {
+	Proof      string `json:"proof"`
+	PublicData string `json:"public_data"`
+	VK         string `json:"vk"`
+}
+
+func invokeVerifierLambdaFunction(functionName string, payload ProverEvent) (string, error) {
+	ctx := context.TODO()
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		log.Fatalf("Unable to load SDK config, %v", err)
+	}
+
+	// Create a Lambda client
+	client := l.NewFromConfig(cfg)
+
+	// Marshal the payload into JSON
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal payload: %w", err)
+	}
+
+	// Set up the Lambda invocation request
+	result, err := client.Invoke(ctx, &l.InvokeInput{
+		FunctionName:   aws.String(functionName),
+		Payload:        payloadBytes,
+		InvocationType: lt.InvocationTypeRequestResponse,
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to invoke lambda: %w", err)
+	}
+
+	// Convert the response payload to a string
+	return string(result.Payload), nil
 }
 
 func main() {

@@ -151,7 +151,7 @@ export class Ethdam2024Stack extends cdk.Stack {
     httpApi.addRoutes({
       path: "/v1/events",
       integration: new HttpLambdaIntegration('HttpApiEndpoint', apiHandler),
-      methods: [apigatewayv2.HttpMethod.GET],
+      methods: [apigatewayv2.HttpMethod.GET, apigatewayv2.HttpMethod.POST],
       authorizer: new apigatewayv2.HttpNoneAuthorizer()
     });
     coreTable.grantReadWriteData(apiHandler)
@@ -177,7 +177,6 @@ export class Ethdam2024Stack extends cdk.Stack {
       }
     );
 
-
     const verifierFunction = new DockerImageFunction(
       this,
       "handleVerifierFunction",
@@ -190,6 +189,8 @@ export class Ethdam2024Stack extends cdk.Stack {
         environment: {},
       }
     );
+    verifierFunction.grantInvoke(apiHandler)
+
 
     const setupFunction = new DockerImageFunction(
       this,
