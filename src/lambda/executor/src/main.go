@@ -5,7 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/big"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -47,37 +50,98 @@ type ContainerPayload struct {
 	Args []string `json:"args"`
 }
 
+type ProverEvent struct {
+	SHA       string `json:"sha"`
+	InputData string `json:"input_data"`
+}
+
+type ProverPayload struct {
+	Event ProverEvent `json:"event"`
+}
+
+type Log struct {
+	BlockHash        string      `json:"blockHash"`
+	BlockNumber      *big.Int    `json:"blockNumber"`
+	TransactionHash  string      `json:"transactionHash"`
+	TransactionIndex uint        `json:"transactionIndex"`
+	Address          string      `json:"address"`
+	Topics           []string    `json:"topics"`
+	LogIndex         uint        `json:"logIndex"`
+	Removed          bool        `json:"removed"`
+	Args             []BigIntHex `json:"args,omitempty"`
+}
+
+type BigIntHex struct {
+	Type string `json:"type"`
+	Hex  string `json:"hex"`
+}
+
 type MessagePayload struct {
-	Args []string `json:"args"`
-	// We can add more here if needed
+	Index           int    `json:"index"`
+	Address         string `json:"address"`
+	TransactionHash string `json:"transactionHash"`
+	BlockNumber     int    `json:"blockNumber"`
+	Log             Log    `json:"log"`
 }
 
 func processMessage(msg events.SQSMessage) error {
+	fmt.Println("Processing message", msg.Body)
 	var payload MessagePayload
 	err := json.Unmarshal([]byte(msg.Body), &payload)
 	if err != nil {
 		log.Printf("Error unmarshalling request: %v", err)
 		return err
 	}
+	var _args []string
+	for _, arg := range payload.Log.Args {
+		cleanHexStr := strings.TrimPrefix(arg.Hex, "0x")
+		number, err := strconv.ParseUint(cleanHexStr, 16, 64)
+		strValue := strconv.FormatUint(number, 10)
 
-	// Grabs the incoming event, formulates it into the right payload struct
-	// Executes the user lambda with struct payload
+		if err != nil {
+			return err
+		}
+		_args = append(_args, strValue)
+	}
+
 	lambdaPayload := ContainerPayload{
-		Args: payload.Args,
+		Args: _args,
 	}
 
 	// Execute the client container and get the result
 	userAppContainer := "Ethdam2024Stack-handleUserAppFunctionB39AFC0F-4u2F2PszAd1Q"
-	output, err := invokeLambdaFunction(userAppContainer, lambdaPayload)
+	proverContainer := "Ethdam2024Stack-handleProverFunctionBA1DC7DA-GtSHEkBQ9wMn"
+
+	userInvoke, err := invokeClientLambdaFunction(userAppContainer, lambdaPayload)
 	if err != nil {
 		return err
 	}
-	fmt.Println(output)
+	fmt.Println("Output ", userInvoke)
+
+	// Trim the 0x
+	cleanHexStr := strings.TrimPrefix(payload.TransactionHash, "0x")
+
+	proverEvent := ProverEvent{
+		InputData: cleanHexStr,
+		SHA:       "bd01e031ba3610a4d7ef4c80214b868d8d89cf7ead2479c0960f37c7e46429b9",
+	}
+
+	proverPayload := ProverPayload{
+		Event: proverEvent,
+	}
+	proverInvoke, err := invokeProverLambdaFunction(proverContainer, proverPayload)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Prover ", proverInvoke)
+
+	// Store the proof, public data, vk, id, transactionHash, address, executionId, eventName
 
 	return nil
 }
 
 func HandleRequest(ctx context.Context, sqsEvent events.SQSEvent) (bool, error) {
+	fmt.Println("Processing event")
 	for _, message := range sqsEvent.Records {
 		err := processMessage(message)
 		if err != nil {
@@ -87,7 +151,37 @@ func HandleRequest(ctx context.Context, sqsEvent events.SQSEvent) (bool, error) 
 	return true, nil
 }
 
-func invokeLambdaFunction(functionName string, payload ContainerPayload) (string, error) {
+func invokeProverLambdaFunction(functionName string, payload ProverPayload) (string, error) {
+	ctx := context.TODO()
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		log.Fatalf("Unable to load SDK config, %v", err)
+	}
+
+	// Create a Lambda client
+	client := l.NewFromConfig(cfg)
+
+	// Marshal the payload into JSON
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal payload: %w", err)
+	}
+
+	// Set up the Lambda invocation request
+	result, err := client.Invoke(ctx, &l.InvokeInput{
+		FunctionName:   aws.String(functionName),
+		Payload:        payloadBytes,
+		InvocationType: types.InvocationTypeRequestResponse,
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to invoke lambda: %w", err)
+	}
+
+	// Convert the response payload to a string
+	return string(result.Payload), nil
+}
+
+func invokeClientLambdaFunction(functionName string, payload ContainerPayload) (string, error) {
 	ctx := context.TODO()
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {

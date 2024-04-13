@@ -1,3 +1,5 @@
 def handler(event, _):
-    print(event)
-    return event
+    [a, b] = event["args"]
+    sum = int(a) + int(b)
+    print(sum)
+    return sum

@@ -18,3 +18,4 @@ cache
 artifacts
 cache
 typechain-types
+.DS_Store
