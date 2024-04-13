@@ -9,11 +9,13 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	l "github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
@@ -135,6 +137,24 @@ func processMessage(msg events.SQSMessage) error {
 	}
 	fmt.Println("Prover ", proverInvoke)
 
+	// create url from https://sepolia.basescan.org/tx/0x038f33794f4336274b699141fb3ae9fff3ffda9fe69c802a9ed14413bbd29ce2
+	url := fmt.Sprintf("https://sepolia.basescan.org/tx/%s", payload.TransactionHash)
+
+	ts := time.Now().UTC().String()
+	proof := ProofEvent{
+		ID:              cleanHexStr,
+		TransactionHash: payload.TransactionHash,
+		URL:             url,
+		Chain:           "Base",
+		Timestamp:       ts,
+		EventName:       "Process",
+		Typename:        "Event",
+		PublicProof:     "123",
+	}
+	err = PutItem(connParams, proof)
+	if err != nil {
+		return err
+	}
 	// Store the proof, public data, vk, id, transactionHash, address, executionId, eventName
 
 	return nil
@@ -209,6 +229,35 @@ func invokeClientLambdaFunction(functionName string, payload ContainerPayload) (
 
 	// Convert the response payload to a string
 	return string(result.Payload), nil
+}
+
+type ProofEvent struct {
+	ID              string `dynamodbav:"id"`
+	TransactionHash string `dynamodbav:"transactionHash"`
+	URL             string `dynamodbav:"url"`
+	PublicProof     string `dynamodbav:"publicProof"`
+	EventName       string `dynamodbav:"eventName"`
+	Chain           string `dynamodbav:"chain"`
+	Typename        string `dynamodbav:"typename"`
+	Timestamp       string `dynamodbav:"timestamp"`
+}
+
+func PutItem(connParams DynamoParams, proof ProofEvent) error {
+	av, err := attributevalue.MarshalMap(proof)
+	if err != nil {
+		return fmt.Errorf("failed to marshal item: %w", err)
+	}
+
+	input := &dynamodb.PutItemInput{
+		TableName: aws.String(tableName),
+		Item:      av,
+	}
+	_, err = connParams.Svc.PutItem(connParams.Ctx, input)
+	if err != nil {
+		return fmt.Errorf("failed to put item in DynamoDB: %w", err)
+	}
+
+	return nil
 }
 
 func main() {
