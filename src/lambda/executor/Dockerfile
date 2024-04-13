@@ -1,6 +1,6 @@
 # Start with the Go base image for building the binary
 FROM golang:1.22.1 as build
-WORKDIR /api-handler
+WORKDIR /executor
 
 # Copy the Go module files and download dependencies
 COPY go.mod go.sum ./
@@ -15,6 +15,6 @@ RUN go build -tags lambda.norpc -o main ./main.go
 # Second stage: build the small runtime image.
 FROM public.ecr.aws/lambda/provided:al2023
 
-COPY --from=build /api-handler/main ./main
+COPY --from=build /executor/main ./main
 
 ENTRYPOINT [ "./main" ]

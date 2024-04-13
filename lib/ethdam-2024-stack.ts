@@ -121,7 +121,7 @@ export class Ethdam2024Stack extends cdk.Stack {
 
     const proverFunction = new DockerImageFunction(
       this,
-      "proverFunction",
+      "handleProverFunction",
       {
         code: DockerImageCode.fromImageAsset("src/lambda/prover"),
         logRetention: RetentionDays.ONE_MONTH,
@@ -135,7 +135,7 @@ export class Ethdam2024Stack extends cdk.Stack {
     // User Client Application
     const userClientContainer = new DockerImageFunction(
       this,
-      "handleExecutorFunction",
+      "handleUserAppFunction",
       {
         code: DockerImageCode.fromImageAsset("src/lambda/user_app"),
         logRetention: RetentionDays.ONE_MONTH,
@@ -166,5 +166,14 @@ export class Ethdam2024Stack extends cdk.Stack {
     );
     coreTable.grantReadWriteData(executorFunction)
     proverFunction.grantInvoke(executorFunction)
+    userClientContainer.grantInvoke(executorFunction)
+
+    executionQueue.grantConsumeMessages(executorFunction)
+    executorFunction.addEventSourceMapping('ExecutorEventSource', {
+      eventSourceArn: executionQueue.queueArn,
+      batchSize: 1,
+    })
+
+
   }
 }
