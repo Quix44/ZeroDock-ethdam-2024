@@ -24,6 +24,7 @@ typechain-types
 .env.local
 
 # next.js
+.next
 /.next/
 /out/
 
