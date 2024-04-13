@@ -619,8 +619,8 @@ img, video {
   --tw-gradient-to: transparent var(--tw-gradient-to-position);
 }
 
-.p-24 {
-  padding: 6rem;
+.p-0 {
+  padding: 0;
 }
 
 .p-6 {
@@ -671,9 +671,9 @@ img, video {
   padding-bottom: .5rem;
 }
 
-.py-8 {
-  padding-top: 2rem;
-  padding-bottom: 2rem;
+.py-24 {
+  padding-top: 6rem;
+  padding-bottom: 6rem;
 }
 
 .text-2xl {

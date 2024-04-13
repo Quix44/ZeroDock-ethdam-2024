@@ -7,7 +7,7 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center ">
       <div className="relative w-full overflow-hidden mb-4">
         <div className="absolute z-0 h-full inset-0 m-auto bg-gradient-to-b border-b border-background pointer-events-none from-[#550097] to-transparent"></div>
-        <header className="p-24 relative z-20 py-8 container flex flex-col gap-8 lg:gap-2">
+        <header className="py-24 relative z-20  container flex flex-col gap-8 lg:gap-2">
           <Image
             src="/zero_dock.svg"
             width={500}

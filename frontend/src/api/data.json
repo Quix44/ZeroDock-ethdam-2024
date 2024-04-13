@@ -1,0 +1,8 @@
+{
+  "contractAddress": "0x5c8...b3F3",
+  "eventName": "Process",
+  "timestamp": "date",
+  "containerName": "foo",
+  "chain": "Base",
+  "url": "link-to-basescan"
+}
