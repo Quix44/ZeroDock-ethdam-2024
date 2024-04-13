@@ -41,6 +41,10 @@ func init() {
 
 func processMessage(msg events.SQSMessage) error {
 	fmt.Printf("Processing message: %s\n", msg.Body)
+	// Grabs the incoming event, formulates it into the right payload struct
+	// Executes the user lambda with struct payload
+	// Awaits the response
+	// With the response output
 	return nil
 }
 
