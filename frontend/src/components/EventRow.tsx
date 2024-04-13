@@ -1,6 +1,6 @@
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { GearIcon } from "@radix-ui/react-icons"
+import ClipboardCopy from "./ClipboardCopy"
 
 function EventRow({ data }: any) {
     return (
@@ -13,12 +13,15 @@ function EventRow({ data }: any) {
             <div className="col-span-3 justify-self-center">
                 <p className="text-base font-semibold text-muted-foreground">{data.timestamp}</p>
             </div>
-            <div className="col-span-3 justify-self-center">
+            <div className="col-span-3 justify-self-center flex flex-col space-y-2">
                 <p className="text-base font-bold text-primary">{data.eventName}</p>
+
+                <ClipboardCopy copyData={{ description: "Public Proof", toolTipText: "Click to copy" }} />
             </div>
             <div className="col-span-2 self-start  justify-self-center flex flex-col">
-                <Badge className="inline-block" variant="outline">Success</Badge>
                 <Button className="p-0" variant="link">{data.url}</Button>
+                <ClipboardCopy copyData={{ description: "Proof", toolTipText: "Click to copy" }} />
+
             </div>
         </article>
     )
