@@ -3,6 +3,8 @@ import EventTable from '@/components/EventTable';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem } from "@/components/ui/select"
+
 import Image from 'next/image';
 
 
@@ -28,10 +30,22 @@ export default function Home() {
           </div>
         </div>
         <div className="col-span-3">
-          // Add event selection dropdown here
+          <Select>
+            <SelectContent>
+              <SelectItem value="light">Light</SelectItem>
+              <SelectItem value="dark">Dark</SelectItem>
+              <SelectItem value="system">System</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="col-span-3">
-          // Add container selection dropdown here
+          <Select>
+            <SelectContent>
+              <SelectItem value="light">Light</SelectItem>
+              <SelectItem value="dark">Dark</SelectItem>
+              <SelectItem value="system">System</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="col-span-2">
           <Button variant="outline">Run</Button>
