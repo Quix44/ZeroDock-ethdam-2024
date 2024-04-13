@@ -1,4 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
+import * as apigatewayv2 from "aws-cdk-lib/aws-apigatewayv2";
+import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import { AttributeType, BillingMode, ProjectionType, Table, TableEncryption } from 'aws-cdk-lib/aws-dynamodb';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import { Cluster, ContainerImage, FargateService, FargateTaskDefinition, LogDrivers } from 'aws-cdk-lib/aws-ecs';
@@ -111,6 +113,49 @@ export class Ethdam2024Stack extends cdk.Stack {
     executionQueue.grantSendMessages(eTask.taskRole)
     coreTable.grantReadWriteData(eTask.taskRole)
 
+
+    const httpApi = new apigatewayv2.HttpApi(this, "HttpApi", {
+      apiName: "Hackathon API",
+      description: "API for hackathon",
+      corsPreflight: {
+        allowCredentials: false,
+        // exposeHeaders: ["*"],
+        allowHeaders: ["*"], // work out what headers are required
+        maxAge: cdk.Duration.minutes(1),
+        allowMethods: [
+          apigatewayv2.CorsHttpMethod.OPTIONS,
+          apigatewayv2.CorsHttpMethod.GET,
+          apigatewayv2.CorsHttpMethod.DELETE,
+          apigatewayv2.CorsHttpMethod.PUT,
+          apigatewayv2.CorsHttpMethod.POST,
+        ],
+        allowOrigins: ["http://localhost:3000"],
+      },
+      disableExecuteApiEndpoint: false,
+    })
+
+
+    const apiHandler = new DockerImageFunction(
+      this,
+      "apiHandlerFunction",
+      {
+        code: DockerImageCode.fromImageAsset("src/lambda/api"),
+        logRetention: RetentionDays.ONE_MONTH,
+        memorySize: 256,
+        architecture: Architecture.ARM_64,
+        timeout: cdk.Duration.seconds(15),
+        environment: {},
+      }
+    );
+
+    httpApi.addRoutes({
+      path: "/v1/events",
+      integration: new HttpLambdaIntegration('HttpApiEndpoint', apiHandler),
+      methods: [apigatewayv2.HttpMethod.GET],
+      authorizer: new apigatewayv2.HttpNoneAuthorizer()
+    });
+    coreTable.grantReadWriteData(apiHandler)
+
     // Create a Fargate Service to run the task definition
     const fargateService = new FargateService(this, 'ListenerService', {
       cluster: ecsCluster,
@@ -124,6 +169,33 @@ export class Ethdam2024Stack extends cdk.Stack {
       "handleProverFunction",
       {
         code: DockerImageCode.fromImageAsset("src/lambda/prover"),
+        logRetention: RetentionDays.ONE_MONTH,
+        memorySize: 256,
+        architecture: Architecture.ARM_64,
+        timeout: cdk.Duration.seconds(15),
+        environment: {},
+      }
+    );
+
+
+    const verifierFunction = new DockerImageFunction(
+      this,
+      "handleVerifierFunction",
+      {
+        code: DockerImageCode.fromImageAsset("src/lambda/verify"),
+        logRetention: RetentionDays.ONE_MONTH,
+        memorySize: 256,
+        architecture: Architecture.ARM_64,
+        timeout: cdk.Duration.seconds(15),
+        environment: {},
+      }
+    );
+
+    const setupFunction = new DockerImageFunction(
+      this,
+      "handleSetupFunction",
+      {
+        code: DockerImageCode.fromImageAsset("src/lambda/setup"),
         logRetention: RetentionDays.ONE_MONTH,
         memorySize: 256,
         architecture: Architecture.ARM_64,
@@ -158,10 +230,7 @@ export class Ethdam2024Stack extends cdk.Stack {
         memorySize: 256,
         architecture: Architecture.ARM_64,
         timeout: cdk.Duration.seconds(15),
-        environment: {
-          USER_CONTAINER_NAME: "",
-          PROVER_CONTAINER_NAME: ""
-        },
+        environment: {},
       }
     );
     coreTable.grantReadWriteData(executorFunction)
@@ -173,7 +242,5 @@ export class Ethdam2024Stack extends cdk.Stack {
       eventSourceArn: executionQueue.queueArn,
       batchSize: 1,
     })
-
-
   }
 }
