@@ -66,7 +66,9 @@ func processMessage(msg events.SQSMessage) error {
 		Args: payload.Args,
 	}
 
-	output, err := invokeLambdaFunction("HackathonContainerLambda", lambdaPayload)
+	// Execute the client container and get the result
+	userAppContainer := "Ethdam2024Stack-handleUserAppFunctionB39AFC0F-4u2F2PszAd1Q"
+	output, err := invokeLambdaFunction(userAppContainer, lambdaPayload)
 	if err != nil {
 		return err
 	}
