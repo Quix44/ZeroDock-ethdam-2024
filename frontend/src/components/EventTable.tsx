@@ -27,14 +27,14 @@ const json = [{
 
 
 async function getData() {
-    // const res = await fetch('../api/data.json')
+    const res = await fetch('https://3q6tzgjhlg.execute-api.us-east-1.amazonaws.com/v1/events', { next: { tags: ['events'] } })
 
-    // if (!res.ok) {
-    //     // This will activate the closest `error.js` Error Boundary
-    //     throw new Error('Failed to fetch data')
-    // }
+    if (!res.ok) {
+        // This will activate the closest `error.js` Error Boundary
+        throw new Error('Failed to fetch data')
+    }
 
-    return json
+    return res.json()
 }
 
 async function EventTable() {
@@ -50,7 +50,7 @@ async function EventTable() {
             <div className="col-span-1 col-start-12 justify-self-end  space-y-1.5 p-6">
                 <RefreshTable />
             </div>
-            {json.map((data) => <EventRow data={data} key={data.contractAddress} />)
+            {data.map((data: any) => <EventRow data={data} key={data.contractAddress} />)
             }
 
         </section>
