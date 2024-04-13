@@ -1,4 +1,7 @@
 'use server';
-export async function getData() {
-    console.log('getData')
+
+import { revalidateTag } from "next/cache";
+
+export async function refresh() {
+    revalidateTag('events');
 }

@@ -38,9 +38,9 @@ export default function Home() {
               <SelectValue placeholder="Select an event" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="light">Light</SelectItem>
-              <SelectItem value="dark">Dark</SelectItem>
-              <SelectItem value="system">System</SelectItem>
+              <SelectItem value="process">Process</SelectItem>
+              <SelectItem value="pay">Pay</SelectItem>
+
             </SelectContent>
           </Select>
         </div>
@@ -51,9 +51,8 @@ export default function Home() {
               <SelectValue placeholder="Select a container" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="light">Light</SelectItem>
-              <SelectItem value="dark">Dark</SelectItem>
-              <SelectItem value="system">System</SelectItem>
+              <SelectItem value="constanza-red">constanza-red</SelectItem>
+              <SelectItem value="jerry-green">jerry-green</SelectItem>
             </SelectContent>
           </Select>
         </div>
