@@ -18,4 +18,21 @@ cache
 artifacts
 cache
 typechain-types
+.idea
+# testing
+/coverage
+.env
+.env.local
+
+# next.js
+.next
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
 .DS_Store
