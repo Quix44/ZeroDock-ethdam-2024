@@ -3,7 +3,7 @@ import EventTable from '@/components/EventTable';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem } from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import Image from 'next/image';
 
@@ -22,15 +22,18 @@ export default function Home() {
           />
         </header>
       </div>
-      <div className="grid grid-cols-12">
+      <div className="grid grid-cols-12 w-full container gap-4 items-center py-12">
         <div className="col-span-4">
-          <div className="grid w-full max-w-sm items-center gap-1.5">
+          <div className=" w-full items-center gap-1.5">
             <Label htmlFor="email">Email</Label>
             <Input type="email" id="email" placeholder="Email" />
           </div>
         </div>
         <div className="col-span-3">
           <Select>
+            <SelectTrigger className="w-ful">
+              <SelectValue placeholder="Select a fruit" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="light">Light</SelectItem>
               <SelectItem value="dark">Dark</SelectItem>
@@ -40,6 +43,9 @@ export default function Home() {
         </div>
         <div className="col-span-3">
           <Select>
+            <SelectTrigger >
+              <SelectValue placeholder="Select a fruit" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="light">Light</SelectItem>
               <SelectItem value="dark">Dark</SelectItem>
