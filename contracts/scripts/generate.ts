@@ -12,7 +12,8 @@ async function main() {
     const txn = await zeroDock.generate(
         1, 1
     );
-    await txn.wait();
+    const _txn = await txn.wait();
+    console.log(_txn)
     console.log("Transaction Complete")
 }
 

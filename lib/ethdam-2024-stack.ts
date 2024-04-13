@@ -1,7 +1,9 @@
 import * as cdk from 'aws-cdk-lib';
 import { AttributeType, BillingMode, ProjectionType, Table, TableEncryption } from 'aws-cdk-lib/aws-dynamodb';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import { Cluster, ContainerImage, FargateService, FargateTaskDefinition } from 'aws-cdk-lib/aws-ecs';
+import { Cluster, ContainerImage, FargateService, FargateTaskDefinition, LogDrivers } from 'aws-cdk-lib/aws-ecs';
+import { Architecture, DockerImageCode, DockerImageFunction } from 'aws-cdk-lib/aws-lambda';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 import path = require('path');
@@ -18,19 +20,6 @@ export class Ethdam2024Stack extends cdk.Stack {
       visibilityTimeout: cdk.Duration.seconds(15)
     });
 
-    // The container that acts as the clients container and creates
-    // const executorFunction = new DockerImageFunction(
-    //   this,
-    //   "handleExecutorFunction",
-    //   {
-    //     code: DockerImageCode.fromImageAsset("src/lambda/executor"),
-    //     logRetention: RetentionDays.ONE_MONTH,
-    //     memorySize: 256,
-    //     architecture: Architecture.ARM_64,
-    //     timeout: cdk.Duration.seconds(15),
-    //     environment: {},
-    //   }
-    // );
     const coreTable = new Table(this, "CoreTable", {
       partitionKey: { name: "id", type: AttributeType.STRING },
       encryption: TableEncryption.AWS_MANAGED,
@@ -83,8 +72,6 @@ export class Ethdam2024Stack extends cdk.Stack {
     //   resources: ["*"],
     // }))
 
-
-
     // Socket Listener ECS
     const vpc = new ec2.Vpc(this, 'SocketListenerVpc', {
       maxAzs: 2,
@@ -103,13 +90,16 @@ export class Ethdam2024Stack extends cdk.Stack {
       clusterName: `ECS-Cluster`,
     });
 
-    const eTask = new FargateTaskDefinition(this, 'EmitlySocketListenerFargate', {
+    const eTask = new FargateTaskDefinition(this, 'SocketListenerFargate', {
       memoryLimitMiB: 1024,
       cpu: 512,
     });
 
     eTask.addContainer('SocketListenerContainer', {
       image: ContainerImage.fromAsset(path.join(__dirname, '../src/lambda/socket-listener')),
+      logging: LogDrivers.awsLogs({
+        streamPrefix: 'Hackathon',
+      }),
       environment: {
         CORE_TABLE: coreTable.tableName,
         SQS_QUEUE_URL: listenerQueue.queueUrl,
@@ -129,18 +119,52 @@ export class Ethdam2024Stack extends cdk.Stack {
       assignPublicIp: true,
     });
 
-    // const proverFunction = new DockerImageFunction(
-    //   this,
-    //   "proverFunction",
-    //   {
-    //     code: DockerImageCode.fromImageAsset("src/lambda/prover"),
-    //     logRetention: RetentionDays.ONE_MONTH,
-    //     memorySize: 256,
-    //     architecture: Architecture.ARM_64,
-    //     timeout: cdk.Duration.seconds(15),
-    //     environment: {},
-    //   }
-    // );
+    const proverFunction = new DockerImageFunction(
+      this,
+      "proverFunction",
+      {
+        code: DockerImageCode.fromImageAsset("src/lambda/prover"),
+        logRetention: RetentionDays.ONE_MONTH,
+        memorySize: 256,
+        architecture: Architecture.ARM_64,
+        timeout: cdk.Duration.seconds(15),
+        environment: {},
+      }
+    );
 
+    // User Client Application
+    const userClientContainer = new DockerImageFunction(
+      this,
+      "handleExecutorFunction",
+      {
+        code: DockerImageCode.fromImageAsset("src/lambda/user_app"),
+        logRetention: RetentionDays.ONE_MONTH,
+        memorySize: 256,
+        architecture: Architecture.ARM_64,
+        timeout: cdk.Duration.seconds(15),
+        environment: {
+          USER_CONTAINER_NAME: "",
+          PROVER_CONTAINER_NAME: ""
+        },
+      }
+    );
+
+    const executorFunction = new DockerImageFunction(
+      this,
+      "handleExecutorFunction",
+      {
+        code: DockerImageCode.fromImageAsset("src/lambda/executor"),
+        logRetention: RetentionDays.ONE_MONTH,
+        memorySize: 256,
+        architecture: Architecture.ARM_64,
+        timeout: cdk.Duration.seconds(15),
+        environment: {
+          USER_CONTAINER_NAME: "",
+          PROVER_CONTAINER_NAME: ""
+        },
+      }
+    );
+    coreTable.grantReadWriteData(executorFunction)
+    proverFunction.grantInvoke(executorFunction)
   }
 }

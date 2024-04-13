@@ -34,6 +34,6 @@ COPY --from=builder /usr/src/app/dist ./dist
 ENV VERSION=0.1.0
 
 # Set the working directory to where the compiled JavaScript files are
-WORKDIR /usr/src/app/dist/src/
+WORKDIR /usr/src/app/dist
 
 CMD [ "node", "app.js" ]

@@ -20,14 +20,10 @@ const listenerMap = new Map<string, ethers.Contract>();
 
 type SocketListenerPayload = {}
 
-const fetchABI = async () => {
-  return []
-}
-
 const handleMessage = async (message: Message): Promise<void | Message> => {
-  const json = JSON.parse(message.Body as string);
-  console.log(`New Message Arrived..`, json);
-  await processMessage(json);
+  console.log(`New Message Arrived..`, message);
+  // const json = JSON.parse(message.Body as string);
+  await processMessage();
   return message
 }
 
@@ -90,10 +86,10 @@ const sendMessage = async (
   }
 };
 
-const processMessage = async (json: any): Promise<void | Message> => {
-  console.log('Porcessing Message..')
+const processMessage = async (): Promise<void | Message> => {
+  console.log('Processing - Message..')
   const _contract = "0x0ba547Ae5BCcf9a028aD69e0443268d46f9C28C1"
-  const filter = generateFilters(_contract, ["generate(uint256,uint256)"])
+  const filter = generateFilters(_contract, ["Process(uint256,uint256)"])
   const id = "123456"
   const wssEndpoint = process.env.WSS_ENDPOINT as string
 
@@ -103,12 +99,11 @@ const processMessage = async (json: any): Promise<void | Message> => {
   );
 
   const handleNewEvent = async (...args: any[]): Promise<void> => {
+    console.log("New On-Chain Event Received..")
     const event = args[args.length - 1] as ethers.Event
     const _interface = new ethers.utils.Interface(ABI);
     const parsedLog = _interface.parseLog(event);
 
-    const messageDeduplicationId = `${event.transactionHash}_${event?.logIndex}`;
-    const messageGroupId = `${event.address}`;
     const socketListenerPayload: SocketListenerPayload = {
       abi: ABI,
       index: event.logIndex,
@@ -123,22 +118,23 @@ const processMessage = async (json: any): Promise<void | Message> => {
       sqsClient,
       JSON.stringify(socketListenerPayload, bigIntReplacer),
       0, // No delay
-      messageGroupId,
-      messageDeduplicationId
+      undefined,
+      undefined
     )
   };
 
   // Clear the subscription and resubscribe
-  const contract = new ethers.Contract(json.contract, ABI, socket);
+  const contract = new ethers.Contract(_contract, ABI, socket);
   contract.on(filter, handleNewEvent);
   listenerMap.set(id, contract);
+  console.log("Now Listneing...")
 
   return
 }
 
 const app = Consumer.create({
   queueUrl: process.env.SQS_QUEUE_URL as string,
-  sqs: sqsClient as any,
+  sqs: sqsClient,
   shouldDeleteMessages: true,
   batchSize: 1,
   handleMessage
