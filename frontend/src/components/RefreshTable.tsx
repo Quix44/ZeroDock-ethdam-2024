@@ -8,7 +8,7 @@ function RefreshTable() {
     return (
         <form action={refresh} >
             <Button variant="outline" size="icon" >
-                <ReloadIcon className="h-4 w-4 animate-spin" />
+                <ReloadIcon className="h-4 w-4" />
             </Button>
         </form>
     )

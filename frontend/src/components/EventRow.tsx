@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { GearIcon, LightningBoltIcon } from "@radix-ui/react-icons";
+import { GearIcon } from "@radix-ui/react-icons";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import ClipboardCopy from "./ClipboardCopy";
+
+const VerifyButton = dynamic(() => import('./VerifyButton'), { ssr: false });
 
 function EventRow({ data }: any) {
     const truncateText = (text: string) => {
@@ -39,10 +42,7 @@ function EventRow({ data }: any) {
                 </Button>
             </div>
             <div className="col-span-1 self-start justify-self-center">
-                <Button variant="outline" className="border-yellow-500 hover:bg-yellow-500">
-
-                    <LightningBoltIcon className="h-4 w-4 " /> Verify
-                </Button>
+                <VerifyButton publicData={data.publicProof} proof={data.proof} />
             </div>
         </article>
     )
