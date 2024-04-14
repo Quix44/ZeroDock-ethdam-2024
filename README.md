@@ -4,11 +4,11 @@ A co-processing (TEE) platform that allows any Docker container to run in a veri
 
 # Overview
 
-![Overview]("./overview.png")
+![Overview]("overview.png")
 
 # How Proofs are Created
 
-![Proof]("./proof.png")
+![Proof]("proof.png")
 
 # Smart Contract (Base Sepolia)
 
