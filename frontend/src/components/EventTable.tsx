@@ -3,7 +3,7 @@ import EventRow from "./EventRow"
 import RefreshTable from "./RefreshTable"
 
 async function getData() {
-    const res = await fetch('https://3q6tzgjhlg.execute-api.us-east-1.amazonaws.com/v1/events', { next: { tags: ['events'] } })
+    const res = await fetch('https://3q6tzgjhlg.execute-api.us-east-1.amazonaws.com/v1/events', { next: { tags: ['events'] }, cache: 'no-cache' })
 
     if (!res.ok) {
         // This will activate the closest `error.js` Error Boundary
