@@ -8,7 +8,10 @@ A co-processing (TEE) platform that allows any Docker container to run in a veri
 
 # How Proofs are Created
 
-Proofs are created for each execution and are stored on chain. We create these by combining the Transaction Hash and the Docker SHA (public and private data) into a circuit to create the proof. This is then stored on chain and can be used to verify that the transaction hash in question did in fact execute a Docker container with the SHA known by the developer (private data)..!!!
+
+
+Proofs are created for each execution and are stored on chain. We create these by combining the Transaction Hash and the Docker SHA (public and private data) into a circuit to create the proof. This is then stored on chain and can be used to verify that the transaction hash in question did in fact execute a Docker container with the SHA known by the developer (private data).!!!
+
 
 ![Proof](proof.png)
 
